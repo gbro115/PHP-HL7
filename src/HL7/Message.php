@@ -6,6 +6,7 @@ namespace Aranyasen\HL7;
 
 use Aranyasen\Exceptions\HL7Exception;
 use InvalidArgumentException;
+use ReflectionClass;
 
 /**
  * Class specifying the HL7 message, both request and response.
@@ -80,7 +81,7 @@ class Message
         $this->segments = [];
 
         // Control characters and other HL7 properties
-        $this->segmentSeparator = $hl7Globals['SEGMENT_SEPARATOR'] ?? '\n';
+        $this->segmentSeparator = $hl7Globals['SEGMENT_SEPARATOR'] ?? chr(13);
         $this->segmentEndingBar = $hl7Globals['SEGMENT_ENDING_BAR'] ?? true; // '|' at end of each segment
         $this->fieldSeparator = $hl7Globals['FIELD_SEPARATOR'] ?? '|';
         $this->componentSeparator = $hl7Globals['COMPONENT_SEPARATOR'] ?? '^';
@@ -163,7 +164,7 @@ class Message
      *
      * @param Segment $segment
      * @param null|int $index Index where segment is inserted
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function insertSegment(Segment $segment, int $index = null): void
     {
@@ -281,7 +282,7 @@ class Message
      * @param Segment $segment
      * @param int $index Index where segment is set
      * @return boolean
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function setSegment(Segment $segment, int $index): bool
     {
@@ -342,11 +343,11 @@ class Message
      * argument as some true value. This will not use the default segment separator, but '\n' instead.
      *
      * @param boolean $pretty Whether to use \n as separator or default (\r).
-     * @return mixed String representation of HL7 message
+     * @return string String representation of HL7 message
      * @access public
      * @throws HL7Exception
      */
-    public function toString(bool $pretty = false)
+    public function toString(bool $pretty = false): string
     {
         if (empty($this->segments)) {
             throw new HL7Exception('Message contains no data. Can not convert to string');
@@ -409,7 +410,7 @@ class Message
      */
     public function resetSegmentIndices(): void
     {
-        $reflector = new \ReflectionClass($this);
+        $reflector = new ReflectionClass($this);
         $segments = glob(dirname($reflector->getFileName()) . '/Segments/*.php');
 
         // Go through each available segment class and reset its ID
